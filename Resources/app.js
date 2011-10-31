@@ -4,8 +4,12 @@
  * MIT Licensed
  */
 
-var A22 = require('lib/framework').Framework();
+var A22 = require('lib/framework').App({
+	name: 'Atomic22 Test App',
+	settings: {
+		SOME_APP_SETTING: { type:'bool', defaultValue:true },
+		SOME_OTHER_APP_SETTING: { type:'string', defaultValue:'Some text' }
+	}
+});
 
-A22.open('welcome', {});
-
-
+A22.open('welcome');

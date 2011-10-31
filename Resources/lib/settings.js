@@ -1,7 +1,9 @@
 
 exports.Settings = function(props){
 	// Private methods
-	var get = function(a) {
+	var Me = this,
+		Target = require('lib/core').EventTarget();
+	Me.get = function(a) {
 		var out;
 		switch (props[a].type) {
 			case 'bool':
@@ -49,10 +51,11 @@ exports.Settings = function(props){
 			default:
 				Ti.App.Properties.setString(a, b);
 		}
+		Target.fire('setting:changed:' + a, { property:a, value:b });
 		return b;
 	};
 	// Public methods
-	this.val = function(a, b) {
+	Me.val = function(a, b) {
 		if (arguments.length == 1) {
 			if (typeof props[a] != 'undefined') {
 				return get(a);
@@ -69,5 +72,11 @@ exports.Settings = function(props){
 			return null;
 		}
 	};
-	return this;
+	Me.bind = function(prop, callback) {
+		Target.on('setting:changed:' + prop, callback);
+	};
+	Me.unbind = function(prop, callback) {
+		Target.remove('setting:changed:' + prop, callback);
+	};
+	return Me;
 };

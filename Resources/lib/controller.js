@@ -44,6 +44,7 @@ exports.Controller = function(name, opts) {
 				byClass[className].push(control);
 			}
 		}
+		Me.fire('control:added', { control:control });
 		return control;
 	};
 	var extendControl = function(control) {
@@ -90,13 +91,17 @@ exports.Controller = function(name, opts) {
 			// Ignore
 		} else if (type == 'object') {
 			for (var prop in style) {
-				el[prop] = style[prop];
+				if (prop in el) {
+					el[prop] = style[prop];
+				}
 			}
 		} else if (type == 'array') {
 			for (var i=0; i < el.length; i++) {
 				var r = el[i];
 				for (var prop in style) {
-					r[prop] = style[prop];
+					if (prop in r) {
+						r[prop] = style[prop];
+					}
 				}
 			}
 		}
@@ -157,17 +162,20 @@ exports.Controller = function(name, opts) {
 	}
 	Me.close = function(opts) {
 		Me.fire('closing', Me);
-		Me.Layout.Window.close(opts);
+		Me.Window.close(opts);
 		Me.fire('closed', Me);
 		return Me;
 	};
 	Me.open = function(opts) {
+		// Load view and view-model
 		Me.fire('opening', Me);
 		require('view/' + name).View(Me);
 		require('viewmodel/' + name).ViewModel(Me.get);
+		// Apply stylesheets
 		for (var i=0; i < stylesheets.length; i++) {
 			require('style/' + stylesheets[i]).Stylesheet(Me.applyStyle);
 		}
+		// Open window
 		Me.Window.open(opts);
 		Me.fire('opened', Me);
 		return Me;

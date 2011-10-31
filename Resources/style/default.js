@@ -1,6 +1,9 @@
 
 exports.Stylesheet = function($) {
 	
+	$('window', {
+		backgroundColor: '#ffffff'
+	});
 	
 	$('.heading', {
 		backgroundColor: '#ff0000',
