@@ -1,0 +1,74 @@
+This project is in its early stages that I am currently just building out for our own apps. However, we decided to open source it so that others might benefit as well... and perhaps even contribute to it.
+
+The main goal of the project is to maintain a simple, yet extendable codebase based on the CommonJS standard and an MVVM (Model, View, View-Model) design pattern. It encourages clean code that is separated logically.
+
+I would assume other folders will be added for third party libraries, plugins, business logic, etc. So this is just intended to be a base.
+
+Titanium's atomic number is 22, so that's the meaning of the name.
+
+~~~~~
+
+Example Use
+
+~~~~~~
+
+APP.JS
+
+// Instantiate the framework
+var A22 = require('lib/framework').Framework();
+// Open the first window
+A22.open('welcome');
+
+~~~~~~~
+
+VIEW/WELCOME.JS
+
+exports.View = function(Me, opts) {
+  
+  // Apply the default stylesheet
+	Me.style('default');
+	
+  // Create a label with an ID and Class for styling and reference later
+	Me.label({
+		id:'lblTitle',
+		className: 'heading',
+		text: 'Hello World'
+	});
+	
+};
+
+
+~~~~~~~~
+
+VIEWMODEL/WELCOME.JS
+
+
+exports.ViewModel = function($) {
+
+  // Add a click event to the label and then change the text
+	$('#lblTitle').on('click', function() {
+		this.text = 'Goodbye World';
+	});
+	
+};
+
+~~~~~~~
+
+STYLE/DEFAULT.JS
+
+
+exports.Stylesheet = function($) {
+	
+  // Define formatting for the heading class
+	$('.heading', {
+		backgroundColor: '#ff0000',
+		color: '#ffffff',
+		top: 0,
+		left: 0,
+		right: 0,
+		height: '50%'
+	});
+	
+}
+
+
