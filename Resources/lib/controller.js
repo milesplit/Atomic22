@@ -10,33 +10,36 @@ exports.Controller = function(name, opts) {
 		stylesheets = [];
 	// Properties
 	Me.controllerName = name;
-	Me.className = 'default';
-	Me.Window = Ti.UI.createWindow();
+	Me.Window = Ti.UI.createWindow(opts);
 	// Private Methods
 	var addControl = function(control, o) {
 		// Add to window
-		var parent = Me.get(o.parent);
-		if (A22.typeOf(parent) == 'object') {
-			parent.add(control);
+		if (o) {
+			var parent = Me.get(o.parent);
+			if (A22.typeOf(parent) == 'object') {
+				parent.add(control);
+			} else {
+				Me.Window.add(control);
+			}
+			// add properties
+			for (k in o) {
+				if (k in control && k != 'parent') {
+					control[k] = o[k];
+				}
+			}
 		} else {
 			Me.Window.add(control);
-		}
-		// add properties
-		for (k in o) {
-			if (k in control) {
-				control[k] = o[k];
-			}
 		}
 		// extend and return
 		extendControl(control);
 		return control;
 	};
-	var registerControl = function(control, o) {
-		if ('id' in o) {
-			byID[o.id] = control;
+	var registerControl = function(control) {
+		if (typeof control['id'] != 'undefined') {
+			byID[control.id] = control;
 		}
-		if ('className' in o) {
-			var arrClass = o.className.split(' ');
+		if (typeof control['className'] != 'undefined') {
+			var arrClass = control.className.split(' ');
 			for (var i=0; i < arrClass.length; i++) {
 				var className = arrClass[i];
 				if (!A22.isSet(byClass[className])) {
@@ -106,7 +109,7 @@ exports.Controller = function(name, opts) {
 			if (type == 'array') {
 				el.forEach(function(r) {
 					for (var prop in style) {
-						if (prop in r) {
+						if (prop in r && prop != 'parent' && prop != 'children') {
 							r[prop] = style[prop];
 						}
 					}
@@ -169,7 +172,7 @@ exports.Controller = function(name, opts) {
 	};
 	Me.style = function() {
 		if (arguments.length < 2) {
-			return;
+			return null;
 		}
 		var selectors = [];
 		for (var i=0; i < arguments.length; i++) {
@@ -184,59 +187,71 @@ exports.Controller = function(name, opts) {
 		return Me;
 	};
 	Me.button = function(o) {
-		return registerControl(addControl(Ti.UI.createButton(), o), o);
+		return registerControl(addControl(Ti.UI.createButton(), o));
 	};
 	Me.coverFlow = function(o) {
-		return registerControl(addControl(Ti.UI.createCoverFlow(), o), o);
+		return registerControl(addControl(Ti.UI.createCoverFlow(), o));
 	};
 	Me.dashboardView = function(o) {
-		return registerControl(addControl(Ti.UI.createDashboardView(), o), o);
+		return registerControl(addControl(Ti.UI.createDashboardView(), o));
 	};
 	Me.imageView = function(o) {
-		return registerControl(addControl(Ti.UI.createImageView(), o), o);
+		return registerControl(addControl(Ti.UI.createImageView(), o));
 	};
 	Me.picker = function(o) {
-		return registerControl(addControl(Ti.UI.createPicker(), o), o);
+		return registerControl(addControl(Ti.UI.createPicker(), o));
 	};
 	Me.progressBar = function(o) {
-		return registerControl(addControl(Ti.UI.createProgressBar(), o), o);
+		return registerControl(addControl(Ti.UI.createProgressBar(), o));
 	};
 	Me.scrollView = function(o) {
-		return registerControl(addControl(Ti.UI.createScrollView(), o), o);
+		return registerControl(addControl(Ti.UI.createScrollView(), o));
 	};
 	Me.slider = function(o) {
-		return registerControl(addControl(Ti.UI.createSlider(), o), o);
+		return registerControl(addControl(Ti.UI.createSlider(), o));
 	};
 	Me.toggle = function(o) {
-		return registerControl(addControl(Ti.UI.createSwitch(), o), o);
+		return registerControl(addControl(Ti.UI.createSwitch(), o));
 	};
 	Me.tabGroup = function(o) {
-		return registerControl(addControl(Ti.UI.createTabGroup(), o), o);
+		return registerControl(addControl(Ti.UI.createTabGroup(), o));
 	};
 	Me.tableView = function(o) {
-		return registerControl(addControl(Ti.UI.createTableView(), o), o);
+		return registerControl(addControl(Ti.UI.createTableView(), o));
 	};
 	Me.textArea = function(o) {
-		return registerControl(addControl(Ti.UI.createTextArea(), o), o);
+		return registerControl(addControl(Ti.UI.createTextArea(), o));
 	};
 	Me.textField = function(o) {
-		return registerControl(addControl(Ti.UI.createTextField(), o), o);
+		return registerControl(addControl(Ti.UI.createTextField(), o));
 	};
 	Me.toolbar = function(o) {
-		return registerControl(addControl(Ti.UI.createToolbar(), o), o);
+		return registerControl(addControl(Ti.UI.createToolbar(), o));
 	};
 	Me.panel = function(o) {
-		return registerControl(addControl(Ti.UI.createView(), o), o);
+		return registerControl(addControl(Ti.UI.createView(), o));
 	};
 	Me.webView = function(o) {
-		return registerControl(addControl(Ti.UI.createWebView(), o), o);
+		return registerControl(addControl(Ti.UI.createWebView(), o));
 	};
 	Me.label = function(o) {
-		return registerControl(addControl(Ti.UI.createLabel(), o), o);
+		return registerControl(addControl(Ti.UI.createLabel(), o));
 	};
 	Me.add = function(control, o) {
-		return registerControl(addControl(control, o), o);
+		return registerControl(
+			addControl(control, {
+				parent:o.parent
+			})
+		);
 	}
+	Me.widget = function(widget, o) {
+		var control = Me.add(widget(o), o);
+		for (var i=0; i < control.children.length; i++) {
+			var child = control.children[i];
+			registerControl(child);
+		}
+		return control;
+	};
 	Me.close = function(opts) {
 		Me.fire('closing', Me);
 		Me.Window.close(opts);

@@ -15,6 +15,7 @@ exports.App = function(opts) {
 	Me.EventTarget = core.EventTarget;
 	Me.Property = core.Property;
 	Me.Settings = settings.Settings(opts.settings);
+	Me.Widget = require('lib/widget').Widget;
 	// Methods
 	Me.now = function() { return new Date().getTime(); };
 	Me.trace = function(msg) { Ti.API.info(msg); return Me; };
