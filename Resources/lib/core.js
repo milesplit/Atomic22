@@ -11,14 +11,14 @@
         _listeners[type].push(listener);
         return Me;
     };
-    Me.fire = function(event){
+    Me.fire = function(event, o){
         if (typeof event == "string"){
             event = { type: event };
         }
         if (!event.target){
             event.target = this;
         }
-        if (!event.type){  //falsy
+        if (!event.type){  //false
             throw new Error("Event object missing 'type' property.");
         }
         if (_listeners[event.type] instanceof Array){

@@ -16,7 +16,7 @@ exports.Controller = function(name, opts) {
 	var addControl = function(control, o) {
 		// Add to window
 		var parent = Me.get(o.parent);
-		if (parent) {
+		if (A22.typeOf(parent) == 'object') {
 			parent.add(control);
 		} else {
 			Me.Window.add(control);
@@ -28,7 +28,8 @@ exports.Controller = function(name, opts) {
 			}
 		}
 		// extend and return
-		return extendControl(control);
+		extendControl(control);
+		return control;
 	};
 	var registerControl = function(control, o) {
 		if ('id' in o) {
@@ -61,12 +62,7 @@ exports.Controller = function(name, opts) {
 		};
 		return control;
 	};
-	
-	// Public Methods
-	Me.style = function(name) {
-		stylesheets.push(name);
-	};
-	Me.get = function(path) {
+	var resolveSelector = function(path) {
 		if (A22.typeOf(path) == 'string') {
 			var startsWith = path.substr(0, 1);
 			if (startsWith == '#') {
@@ -76,6 +72,8 @@ exports.Controller = function(name, opts) {
 			} else {
 				if (path == 'window') {
 					return Me.Window;
+				} else if (path == '*') {
+					return byID;
 				} else {
 					return null;
 				}
@@ -84,20 +82,36 @@ exports.Controller = function(name, opts) {
 			return null;
 		}
 	};
-	Me.applyStyle = function(path, style) {
-		var el = Me.get(path);
-		var type = A22.typeOf(el);
-		if (type == 'null') {
-			// Ignore
-		} else if (type == 'object') {
-			for (var prop in style) {
+	var applyStyle = function() {
+		if (arguments.length == 3) {
+			var el = arguments[0];
+			var prop = arguments[1];
+			var val = arguments[2];
+			var type = A22.typeOf(el);
+			if (type == 'array') {
+				for (var i=0; i < el.length; i++) {
+					if (prop in el[i]) {
+						el[i][prop] = val;
+					}
+				}
+			} else if (type == 'object') {
 				if (prop in el) {
-					el[prop] = style[prop];
+					el[prop] = val;
 				}
 			}
-		} else if (type == 'array') {
-			for (var i=0; i < el.length; i++) {
-				var r = el[i];
+		} else if (arguments.length == 2) {
+			var el = arguments[0];
+			var style = arguments[1];
+			var type = A22.typeOf(el);
+			if (type == 'array') {
+				el.forEach(function(r) {
+					for (var prop in style) {
+						if (prop in r) {
+							r[prop] = style[prop];
+						}
+					}
+				});
+			} else if (type == 'object') {
 				for (var prop in style) {
 					if (prop in r) {
 						r[prop] = style[prop];
@@ -105,6 +119,69 @@ exports.Controller = function(name, opts) {
 				}
 			}
 		}
+	}
+	// Public Methods
+	Me.stylesheet = function(name) {
+		stylesheets.push(name);
+	};
+	Me.get = function() {
+		if (arguments.length == 1) {
+			// Single argument
+			var type = A22.typeOf(arguments[0]);
+			if (type == 'string') {
+				// string
+				return resolveSelector(arguments[0]);
+			} else if (type == 'array') {
+				// Several strings in an array
+				var out = [];
+				arguments[0].forEach(function(path) {
+					var selected = resolveSelector(path);
+					if (selected) {
+						if (A22.typeOf(selected) == 'array') {
+							selected.forEach(function(item) {
+								out.push(item);
+							});
+						} else {
+							out.push(selected);
+						}
+					}
+				});
+				return out;
+			}
+		} else if (arguments.length > 1) {
+			var out = [];
+			// Arguments is (stupidly) not an actual array, can't do forEach
+			for (var i=0; i < arguments.length; i++) {
+				var selected = resolveSelector(arguments[i]);
+				if (selected) {
+					if (A22.typeOf(selected) == 'array') {
+						selected.forEach(function(item) {
+							out.push(item);
+						});
+					} else {
+						out.push(selected);
+					}
+				}
+			}
+			return out;
+		}
+		return [];		
+	};
+	Me.style = function() {
+		if (arguments.length < 2) {
+			return;
+		}
+		var selectors = [];
+		for (var i=0; i < arguments.length; i++) {
+			var r = arguments[i];
+			if (i == arguments.length - 1) {
+				// last argument is style, so apply it
+				applyStyle(Me.get(selectors), r);
+			} else {
+				selectors.push(r);
+			}
+		}
+		return Me;
 	};
 	Me.button = function(o) {
 		return registerControl(addControl(Ti.UI.createButton(), o), o);
@@ -168,16 +245,17 @@ exports.Controller = function(name, opts) {
 	};
 	Me.open = function(opts) {
 		// Load view and view-model
-		Me.fire('opening', Me);
+		A22.trace('opening ' + Me.moduleName);
+		Me.fire('opening');
 		require('view/' + name).View(Me);
 		require('viewmodel/' + name).ViewModel(Me.get);
 		// Apply stylesheets
 		for (var i=0; i < stylesheets.length; i++) {
-			require('style/' + stylesheets[i]).Stylesheet(Me.applyStyle);
+			require('style/' + stylesheets[i]).Stylesheet(Me.style);
 		}
 		// Open window
 		Me.Window.open(opts);
-		Me.fire('opened', Me);
+		Me.fire('opened');
 		return Me;
 	};
 	// Event handling

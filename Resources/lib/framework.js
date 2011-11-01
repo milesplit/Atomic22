@@ -1,4 +1,6 @@
 
+require('lib/polyfill').apply();
+
 var core = require('lib/core');
 var settings = require('lib/settings');
 
@@ -16,7 +18,7 @@ exports.App = function(opts) {
 	// Methods
 	Me.now = function() { return new Date().getTime(); };
 	Me.trace = function(msg) { Ti.API.info(msg); return Me; };
-	Me.window
+	Me.window = function() { return Ti.UI.currentWindow; };
 	Me.typeOf = function(v) {
 		if (typeof(v) == 'object') {
 			if (v === null) return 'null';

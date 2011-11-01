@@ -13,5 +13,5 @@ exports.Stylesheet = function($) {
 		right: 0,
 		height: '50%'
 	});
-	
-}
+
+};
