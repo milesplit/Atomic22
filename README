@@ -15,7 +15,12 @@ Example Use
 APP.JS
 
 // Instantiate the framework
-var A22 = require('lib/framework').Framework();
+var A22 = require('lib/framework').App({
+	name: 'Atomic22 Example App',
+	settings: {
+		FOO: { type:'string', defaultValue:'Bar' }
+	}
+});
 // Open the first window
 A22.open('welcome');
 
@@ -58,8 +63,13 @@ STYLE/DEFAULT.JS
 
 
 exports.Stylesheet = function($) {
+
+	// Set window background color
+	$('window', {
+		backgroundColor: '#ffffff'
+	});
 	
-  // Define formatting for the heading class
+	// Define formatting for the heading class
 	$('.heading', {
 		backgroundColor: '#ff0000',
 		color: '#ffffff',
